@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Number Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    body {
+        font-family: 'Press Start 2P', cursive;
+        background: url('file:///D:/My%20Game/Background1.jpeg') no-repeat center center fixed;
+        background-size: cover;
+        color: #fff;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+        text-shadow: 2px 2px 4px rgba(0,0,0,7);
+    }
+    .container {
+        background: url('file:///D:/My%20Game/level.jpeg') no-repeat center center fixed;
+        background-size: cover;
+        border-radius: 40px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        padding: 30px;
+        max-width: 800px;
+        text-align: center;
+        overflow-y: auto;
+        max-height: 80vh;
+    }
+    h2, h3 {
+        color: #ffcc00;
+    }
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .user-table th {
+        border: 2px solid #ffcc00; /* Golden frame */
+        padding: 6px;
+        text-align: center;
+        color: #295BA7; /* Added turquoise color */
+        font-weight: bold; /* Bold the text */
+        font-size: 22px; /* Increased font size */
+    }
+   .user-table td {
+        border: 2px solid #ffcc00; /* Golden frame */
+        padding: 6px;
+        text-align: center;
+        color: Black; /* Added turquoise color */
+        font-weight: None; /* Bold the text */
+        font-size: 20px; /* Increased font size */
+    }
+    .user-table th {
+        background-color: ;
+    }
+    .user-table td {
+        background-color: #59B4C3;
+    }
+    .trophy {
+        width: 30px;
+        height: 30px;
+    }
+    .edit-number {
+        width: 50px;
+    }
+    .delete-btn, .save-btn {
+        padding: 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+    }
+    .delete-btn {
+        background-color: #ff3860;
+    }
+    .delete-btn:hover {
+        background-color: #ff1c4e;
+    }
+    .save-btn {
+        background-color: #23d160;
+    }
+    .save-btn:hover {
+        background-color: #22c65c;
+    }
+    .button {
+        background-color: #3273dc;
+        color: #fff;
+        padding: 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-transform: uppercase;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    .button:hover {
+        background-color: #275aa8;
+    }
+    input, select {
+        width: 40%;
+        padding: 6px;
+        margin: 10px 0;
+        box-sizing: border-box;
+        border: 1px solid gold; /* Add golden frame */
+        background-color: gray; /* Change background to gray */
+        color: navy blue; /* Change font color to blue */
+        font-size: 24px; /* Change font size to 24px */
+        font-weight: bold; /* Make the font bold */
+    }
+    .result {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 20px 0;
+        color: #00d1b2;
+    }
+    .hidden {
+        display: none;
+    }
+</style>
+
+<div class="container">
+    <h2>&#x1F3B2; King of Luck &#x1F3B2;</h2>
+    <input type="text" id="userName" placeholder="Enter your name">
+    <button id="addPlayerButton" class="button">&#128292</button>
+    <button id="exportDataButton" class="button">E</button>
+     <input type="file" id="importDataInput" class="hidden">
+    <button id="importDataButton" class="button">I</button>
+    <button id="achievementsButton" class="button">&#127942;</button>
+    <button id="resetButton" class="button">&#9851;
+</button>
+    <select id="existingUsers"></select>
+    <input type="number" id="additionalNumber" min="0" max="99" placeholder="Enter another number">
+    <button id="addNumberButton" class="button">&#x23F5;</button>
+    <p id="result" class="result"></p>
+    <ul id="namesList"></ul>
+    <table class="user-table" id="namesTable">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Score</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Table rows will be dynamically added here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const userScores = JSON.parse(localStorage.getItem('userScores')) || {};
+    const userLuckyNumbers = JSON.parse(localStorage.getItem('userLuckyNumbers')) || {};
+    const archivedUserScores = JSON.parse(localStorage.getItem('archivedUserScores')) || {};
+    const archivedUserLuckyNumbers = JSON.parse(localStorage.getItem('archivedUserLuckyNumbers')) || {};
+
+    function addScore(name, score) {
+        if (!archivedUserScores[name]) {
+            archivedUserScores[name] = 0;
+        }
+        userScores[name] += score;
+        archivedUserScores[name] += score;
+    }
+
+    function updateNamesList() {     
+      // export JSON
+     document.getElementById('exportDataButton').addEventListener('click', function () {
+      const data = {
+        userScores,
+        userLuckyNumbers,
+        archivedUserScores,
+        archivedUserLuckyNumbers
+    };
+
+       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+       const a = document.createElement("a");
+       a.href = URL.createObjectURL(blob);
+       a.download = "game_data.json";
+       document.body.appendChild(a);
+       a.click();
+       document.body.removeChild(a);
+     });
+ 
+     // import JSON
+     document.getElementById('importDataButton').addEventListener('click', function () {
+    document.getElementById('importDataInput').click();
+     });
+
+       document.getElementById('importDataInput').addEventListener('change', function (event) {
+       const file = event.target.files[0];
+       if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            localStorage.setItem('userScores', JSON.stringify(importedData.userScores));
+            localStorage.setItem('userLuckyNumbers', JSON.stringify(importedData.userLuckyNumbers));
+            localStorage.setItem('archivedUserScores', JSON.stringify(importedData.archivedUserScores));
+            localStorage.setItem('archivedUserLuckyNumbers', JSON.stringify(importedData.archivedUserLuckyNumbers));
+
+            alert("Data imported successfully!");
+            location.reload(); // reload
+            } catch (error) {
+            alert("Invalid file format. Please upload a valid JSON file.");
+          }
+          };
+      reader.readAsText(file);
+         });
+ 
+        document.getElementById('resetButton').addEventListener('click', function() {
+        if (confirm("Are you sure you want to reset all players and scores?")) {
+            localStorage.removeItem('userScores');
+            localStorage.removeItem('userLuckyNumbers');
+            localStorage.removeItem('archivedUserScores');
+            localStorage.removeItem('archivedUserLuckyNumbers');
+            
+            alert('All players and scores have been reset.');
+            location.reload();
+        }
+    });
+
+        const namesTable = document.getElementById('namesTable').getElementsByTagName('tbody')[0];
+        const existingUsers = document.getElementById('existingUsers');
+        const previouslySelectedUser = existingUsers.value;
+
+        namesTable.innerHTML = '';
+        existingUsers.innerHTML = '';
+
+        const fullScores = {};
+        Object.keys(userScores).forEach(name => {
+            fullScores[name] = (archivedUserScores[name] || 0) + userScores[name];
+        });
+
+        const sortedUsers = Object.entries(fullScores).sort((a, b) => b[1] - a[1]);
+        const bestPlayer = sortedUsers.length > 0 ? sortedUsers[0][0] : null;
+
+        sortedUsers.forEach(([name, score], index) => {
+            const row = namesTable.insertRow();
+
+            const rankCell = row.insertCell();
+            const nameCell = row.insertCell();
+            const scoreCell = row.insertCell();
+            const actionsCell = row.insertCell();
+
+            rankCell.textContent = index + 1;
+            nameCell.textContent = name;
+            let currentSessionScore = userScores[name] === undefined ? 0 : userScores[name];
+            scoreCell.textContent = currentSessionScore;
+            scoreCell.addEventListener('dblclick', function() {
+                const newScore = prompt("Enter new score:", currentSessionScore);
+                if (newScore !== null && !isNaN(newScore)) {
+                    userScores[name] = Number(newScore);
+                    localStorage.setItem('userScores', JSON.stringify(userScores));
+                    updateNamesList();
+                }
+            });
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-btn';
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', function() {
+                archivedUserScores[name] = fullScores[name];
+                archivedUserLuckyNumbers[name] = userLuckyNumbers[name];
+                delete userScores[name];
+                delete userLuckyNumbers[name];
+                localStorage.setItem('userScores', JSON.stringify(userScores));
+                localStorage.setItem('userLuckyNumbers', JSON.stringify(userLuckyNumbers));
+                localStorage.setItem('archivedUserScores', JSON.stringify(archivedUserScores));
+                localStorage.setItem('archivedUserLuckyNumbers', JSON.stringify(archivedUserLuckyNumbers));
+                updateNamesList();
+            });
+
+            actionsCell.appendChild(deleteButton);
+
+            const optionItem = document.createElement('option');
+            optionItem.value = name;
+            optionItem.textContent = name;
+            existingUsers.appendChild(optionItem);
+        });
+
+        if (previouslySelectedUser && [...existingUsers.options].some(option => option.value === previouslySelectedUser)) {
+            existingUsers.value = previouslySelectedUser;
+        } else {
+            existingUsers.selectedIndex = 0;
+        }
+    }
+
+    document.getElementById('addPlayerButton').addEventListener('click', function() {
+        const userName = document.getElementById('userName').value.trim();
+        const resultElement = document.getElementById('result');
+
+        if (userName === "") {
+            resultElement.innerText = "Please enter a valid name.";
+        } else {
+            if (!userScores[userName]) {
+                if (archivedUserScores[userName]) {
+                    userScores[userName] = 0;
+                    userLuckyNumbers[userName] = archivedUserLuckyNumbers[userName];
+                } else {
+                    userScores[userName] = 0;
+                    userLuckyNumbers[userName] = [];
+                }
+                localStorage.setItem('userScores', JSON.stringify(userScores));
+                localStorage.setItem('userLuckyNumbers', JSON.stringify(userLuckyNumbers));
+                updateNamesList();
+                resultElement.innerText = `${userName} has been registered with a score of zero.`;
+            } else {
+                resultElement.innerText = `${userName} has already been registered.`;
+            }
+
+            document.getElementById('userName').value = '';
+        }
+    });
+
+    document.getElementById('addNumberButton').addEventListener('click', function() {
+        const selectedUser = document.getElementById('existingUsers').value;
+        const additionalNumber = document.getElementById('additionalNumber').value;
+        const resultElement = document.getElementById('result');
+
+        if (selectedUser && !isNaN(additionalNumber) && additionalNumber >= 0 && additionalNumber <= 99) {
+            let randomNumber;
+            do {
+                randomNumber = Math.floor(Math.random() * 23) - 7;
+            } while (randomNumber === 0);
+
+            resultElement.innerText = `Lucky number = ${randomNumber}`;
+
+            addScore(selectedUser, randomNumber);
+            userLuckyNumbers[selectedUser].push(randomNumber);
+            localStorage.setItem('userScores', JSON.stringify(userScores));
+            localStorage.setItem('userLuckyNumbers', JSON.stringify(userLuckyNumbers));
+
+            updateNamesList();
+            document.getElementById('additionalNumber').value = '';
+
+            // Play a specific video for each lucky number between -7 and 15 for any player
+            if (randomNumber >= -7 && randomNumber <= 15) {
+                const videoElement = document.getElementById(`video${randomNumber}`);
+                if (videoElement) {
+                    videoElement.classList.remove('hidden');
+                    if (videoElement.requestFullscreen) {
+                        videoElement.currentTime = 0;
+                        videoElement.play();
+                        videoElement.requestFullscreen();
+                    } else if (videoElement.mozRequestFullScreen) { /* Firefox */
+                        videoElement.mozRequestFullScreen();
+                    } else if (videoElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                        videoElement.webkitRequestFullscreen();
+                    } else if (videoElement.msRequestFullscreen) { /* IE/Edge */
+                        videoElement.msRequestFullscreen();
+                    }
+
+                    videoElement.addEventListener('ended', () => {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.mozCancelFullScreen) { /* Firefox */
+                            document.mozCancelFullScreen();
+                        } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+                            document.webkitExitFullscreen();
+                        } else if (document.msExitFullscreen) { /* IE/Edge */
+                            document.msExitFullscreen();
+                        }
+                        videoElement.classList.add('hidden');
+                    });
+                }
+            }
+        } else {
+            resultElement.innerText = "Please select a user and enter a valid number.";
+        }
+    });
+
+    document.getElementById('achievementsButton').addEventListener('click', function() {
+        const achievementsPage = window.open('', 'Achievements Page', 'width=800,height=600');
+        let sortedScores = Object.keys(archivedUserScores).map(name => [name, archivedUserScores[name]]);
+        sortedScores.sort((a, b) => b[1] - a[1]); // Sort by score descending
+        achievementsPage.document.write(`
+            <html>
+            <head>
+                <title>Achievements</title>
+                <style>
+                    body {
+                        font-family: 'Press Start 2P', cursive;
+                        background: #111;
+                        color: #fff;
+                        padding: 20px;
+                        text-align: center;
+                    }
+                    h2 {
+                        color: #ffcc00;
+                    }
+                    .user-achievements {
+                        border: 2px solid #ffcc00;
+                        padding: 10px;
+                        margin: 10px 0;
+                    }
+                    .user-achievements h3 {
+                        color: turquoise;
+                    }
+                </style>
+            </head>
+            <body>
+                <h2>Players Achievements</h2>
+                ${sortedScores.map(([name, score], index) => `
+                    <div class="user-achievements">
+                        <h3>${name}${index === 0 ? ' ( King of The Game&#127942;&#128293)' : ''}</h3>
+                        <p>Highest Score: ${score}</p>
+                    </div>
+                `).join('')}
+            </body>
+            </html>
+        `);
+    });
+
+    updateNamesList();
+</script>
